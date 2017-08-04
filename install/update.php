@@ -68,9 +68,9 @@ for ($i=0; $i<count($matches[1]); $i++) {
 @mysql_query(" update $shop[user_table] set user_pw = PASSWORD('$user_pw'), user_login = '".$shop['time_ymdhis']."', user_login_ip = '".$_SERVER['REMOTE_ADDR']."', user_ip = '".$_SERVER['REMOTE_ADDR']."', datetime = '".$shop['time_ymdhis']."' where user_id = '$user_id' ");
 
 // 현재 버전 설정
-$shop['version'] = "DM SHOP Ver. 0.99.56";
-$shop['version_code'] = "56";
-$shop['version_date'] = "2017-02-15";
+$shop['version'] = "DM SHOP Ver. 0.99.57";
+$shop['version_code'] = "57";
+$shop['version_date'] = "2017-08-04";
 
 // update
 @mysql_query(" update $shop[config_table] set version = '".$shop['version']."', version_code = '".$shop['version_code']."', version_date = '".$shop['version_date']."' ");

@@ -2,41 +2,141 @@
 include_once("./_dmshop.php");
 echo "<meta http-equiv='content-type' content='text/html; charset=$shop[charset]'>";
 
+$message = "";
+
 if ($q) { $q = preg_match("/^[A-Za-z0-9_가-힣\x20]+$/", $q) ? $q : ""; }
 
 if ($q) {
 
-    $array = array();
-    $list = array();
-    $fp = fopen($shop['path']."/zip.db", "r");
-    while(!feof($fp)) {
-        $array[] = fgets($fp, 4096);
-    }
-    fclose($fp);
+    // 도로명
+    if ($dmshop['zipcode'] == 1) {
 
-    $zip_count = 0;
-    foreach($array as $data) {
+        $url = "http://zipcode.teraboard.net/?q=".urlencode($q);
+        $url = shop_text($url);
 
-        if (strstr($data,$q)) {
+        $data = array('id' => $id, 'q' => $q);
 
-            $list[$zip_count]['zip1'] = substr($data,0,3);
-            $list[$zip_count]['zip2'] = substr($data,3,3);
+        while(list($n,$v) = each($data)){
+            $send_data[] = "$n=$v";
+        }
+        $send_data = implode('&', $send_data);
 
-            $addr_array = explode(' ', substr($data,7));
-            if (substr($addr_array[sizeof($addr_array)-1],0,1) == '(' || intval(substr($addr_array[count($addr_array)-1],0,1))) {
+        $url = parse_url($url);
 
-                $addr = trim(str_replace($addr_array[count($addr_array)-1], '', substr($data,7)));	
+        $host = $url['host'];
+        $path = $url['path'];
 
-            } else {
+        $fp = fsockopen($host, 80, $errno, $errstr, 5);
+        if (!is_resource($fp)) {
+            return false;
+        }
 
-                $addr = trim(substr($data,7));
+        fputs($fp, "POST $path HTTP/1.1\r\n");
+        fputs($fp, "Host: $host\r\n");
+        fputs($fp, "Content-type: application/x-www-form-urlencoded\r\n");
+        fputs($fp, "Content-length: " . strlen($send_data) . "\r\n");
+        fputs($fp, "Connection:close" . "\r\n\r\n");
+        fputs($fp, $send_data);
+
+        $result = '';
+        while(!feof($fp)) {
+            $result .= fgets($fp, 128);
+        }
+        fclose($fp);
+
+        $result = explode("\r\n\r\n", $result, 2);
+
+        $header = isset($result[0]) ? $result[0] : '';
+        $content = isset($result[1]) ? $result[1] : '';
+
+        //결과 출력
+        //echo $header;
+        //echo $content;
+
+        preg_match_all("/<item>(.*)<\/item>/Uis", $content, $matches);
+
+        $message = preg_match("/<message><!\[CDATA\[(.*)\]\]><\/message>/Uis", $content, $match);
+        $message = trim($match[1]);
+
+        unset($content);
+
+        $n = 0;
+        $list = array();
+        for ($i=0; $i<count($matches[1]); $i++) {
+
+            $zipcode = preg_match("/<zipcode><!\[CDATA\[(.*)\]\]><\/zipcode>/Uis", $matches[1][$i], $match);
+            $zipcode = trim($match[1]);
+
+            $addr = preg_match("/<addr><!\[CDATA\[(.*)\]\]><\/addr>/Uis", $matches[1][$i], $match);
+            $addr = trim($match[1]);
+
+            $addr2 = preg_match("/<addr2><!\[CDATA\[(.*)\]\]><\/addr2>/Uis", $matches[1][$i], $match);
+            $addr2 = trim($match[1]);
+
+            $building = preg_match("/<building><!\[CDATA\[(.*)\]\]><\/building>/Uis", $matches[1][$i], $match);
+            $building = trim($match[1]);
+
+            $list[$n]['zip1'] = shop_split("-", filter1($zipcode), 0);
+            $list[$n]['zip2'] = shop_split("-", filter1($zipcode), 1);
+
+            $list[$n]['addr'] = filter1($addr);
+            $list[$n]['addr2'] = filter1($addr2);
+
+            if ($building) {
+
+                $list[$n]['addr'] .= " (".filter1($building).")";
+                $list[$n]['addr2'] .= " (".filter1($building).")";
 
             }
 
-            $list[$zip_count]['full_addr'] = trim(substr($data,7));
-            $list[$zip_count]['addr'] = $addr;
+            $list[$n]['building'] = filter1($building);
 
-            $zip_count++;
+
+            $list[$n]['zipcode'] = $list[$n]['zip1'].$list[$n]['zip2'];
+            $list[$n]['full_addr'] = $list[$n]['addr2'];
+            $list[$n]['addr'] = $list[$n]['addr2'];
+
+            $n++;
+
+        }
+
+    } else {
+    // 지번
+
+        $array = array();
+        $list = array();
+        $fp = fopen($shop['path']."/zip.db", "r");
+        while(!feof($fp)) {
+            $array[] = fgets($fp, 4096);
+        }
+        fclose($fp);
+
+        $zip_count = 0;
+        foreach($array as $data) {
+
+            if (strstr($data,$q)) {
+
+                $list[$zip_count]['zip1'] = substr($data,0,3);
+                $list[$zip_count]['zip2'] = substr($data,3,3);
+                $list[$zip_count]['zipcode'] = $list[$zip_count]['zip1'].$list[$zip_count]['zip2'];
+    
+                $addr_array = explode(' ', substr($data,7));
+                if (substr($addr_array[sizeof($addr_array)-1],0,1) == '(' || intval(substr($addr_array[count($addr_array)-1],0,1))) {
+
+                    $addr = trim(str_replace($addr_array[count($addr_array)-1], '', substr($data,7)));	
+
+                } else {
+
+                    $addr = trim(substr($data,7));
+
+                }
+
+                $list[$zip_count]['full_addr'] = trim(substr($data,7));
+                $list[$zip_count]['addr'] = $addr;
+
+                $zip_count++;
+
+            }
 
         }
 
@@ -127,7 +227,7 @@ $shop['title'] = $dmshop['shop_name']." - 우편번호찾기";
 <table border="0" cellspacing="0" cellpadding="0">
 <? for ($i=0; $i<count($list); $i++) { ?>
 <tr height="50">
-    <td width="50" class="zip" valign="top"><?=$list[$i]['zip1']?>-<?=$list[$i]['zip2']?></td>
+    <td width="50" class="zip" valign="top"><?=$list[$i]['zipcode']?></td>
     <td valign="top"><a href="#" onclick="zipAdd('<?=$m?>', '<?=$list[$i]['zip1']?>', '<?=$list[$i]['zip2']?>', '<?=$list[$i]['addr']?>'); return false;" class="addr"><?=$list[$i]['full_addr']?></a></td>
 </tr>
 <? } ?>

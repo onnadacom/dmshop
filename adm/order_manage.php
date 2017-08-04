@@ -46,6 +46,10 @@ $from_record = ($page - 1) * $rows;
 
 $shop_pages = shop_paging_v1("10", $page, $total_page, "?page=");
 
+// 배송비 선결제
+$order_delivery_pay = false;
+
+$list = array();
 $result = sql_query(" select * from $shop[order_table] $sql_search order by order_number asc limit $from_record, $rows ");
 for ($i=0; $row=sql_fetch_array($result); $i++) {
 
@@ -80,6 +84,18 @@ for ($i=0; $row=sql_fetch_array($result); $i++) {
 
             // 수량 제로
             $list[$i]['item_limit'] = "0";
+
+        }
+
+    }
+
+    // 묶음배송
+    if ($row['order_delivery_type']) {
+
+        // 선결제
+        if (!$row['order_delivery_pay']) {
+
+            $order_delivery_pay = true;
 
         }
 

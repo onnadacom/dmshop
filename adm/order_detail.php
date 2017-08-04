@@ -43,10 +43,26 @@ $from_record = ($page - 1) * $rows;
 
 $shop_pages = shop_paging_v1("10", $page, $total_page, "?order_code=".$order_code."&page=");
 
+// 배송비 선결제
+$order_delivery_pay = false;
+
+$list = array();
 $result = sql_query(" select * from $shop[order_table] $sql_search order by order_number asc limit $from_record, $rows ");
 for ($i=0; $row=sql_fetch_array($result); $i++) {
 
     $list[$i] = $row;
+
+    // 묶음배송
+    if ($row['order_delivery_type']) {
+
+        // 선결제
+        if (!$row['order_delivery_pay']) {
+
+            $order_delivery_pay = true;
+
+        }
+
+    }
 
 }
 
@@ -149,19 +165,73 @@ body {background-color:#ffffff;}
     <td><span style="line-height:16px; font-size:12px; color:#414141; font-family:dotum,돋움;">주문상품(옵션)</span></td>
     <td width="60" align="center"><span style="line-height:16px; font-size:12px; color:#414141; font-family:dotum,돋움;">수량</span></td>
     <td width="100" align="center"><span style="line-height:16px; font-size:12px; color:#414141; font-family:dotum,돋움;">상품가격</span></td>
+    <td width="100" align="center"><span style="line-height:16px; font-size:12px; color:#414141; font-family:dotum,돋움;">배송비</span></td>
 </tr>
 <tr>
-    <td colspan="4" height="1" bgcolor="#e4e4e4"></td>
+    <td colspan="5" height="1" bgcolor="#e4e4e4"></td>
 </tr>
-<? for ($i=0; $i<count($list); $i++) { ?>
+<?
+$item_delivery_bunch = false;
+
+for ($i=0; $i<count($list); $i++) { ?>
 <tr height="30">
     <td width="10"></td>
     <td><a href="<?=$shop['path']?>/item.php?id=<?=$list[$i]['item_code']?>" target="_blank"><span style="line-height:16px; font-size:12px; color:#414141; font-family:dotum,돋움;">[<?=$list[$i]['item_code']?>] <?=text($list[$i]['item_title'])?><? if ($list[$i]['option_name']) { ?> (옵션 : <?=text($list[$i]['option_name'])?>)<? } ?></span></a></td>
     <td width="60" align="center"><span style="line-height:16px; font-size:12px; color:#414141; font-family:dotum,돋움;"><?=number_format($list[$i]['order_limit']);?></span></td>
     <td width="100" align="center"><span style="line-height:16px; font-size:12px; color:#414141; font-family:dotum,돋움;"><?=number_format($list[$i]['order_item_money']);?></span></td>
+    <td width="100" align="center"><div style="padding:10px 0; line-height:16px; font-size:12px; color:#414141; font-family:dotum,돋움;">
+<?
+if ($list[$i]['order_delivery_type'] == 2) {
+
+    if ($list[$i]['order_delivery_pay']) {
+
+        echo "착불<br />";
+
+    } else {
+
+        echo "선결제<br />";
+
+    }
+
+    echo number_format($list[$i]['order_real_delivery'])." 원<br />";
+
+    echo "묶음배송불가";
+
+} else {
+
+    if ($dmshop_order['order_total_item_money'] >= $dmshop_order['delivery_money_free']) {
+
+        echo "묶음배송무료<br />";
+
+    } else {
+
+        if (!$item_delivery_bunch) {
+
+            if ($order_delivery_pay) {
+
+                echo "선결제<br />";
+
+            } else {
+
+                echo "착불<br />";
+
+            }
+
+            echo number_format($dmshop_order['delivery_money'])." 원<br />";
+
+        }
+
+        echo "묶음배송";
+
+        $item_delivery_bunch = true;
+
+    }
+
+}
+?></div></td>
 </tr>
 <tr>
-    <td colspan="4" height="1" bgcolor="#e4e4e4"></td>
+    <td colspan="5" height="1" bgcolor="#e4e4e4"></td>
 </tr>
 <? } ?>
 <?
@@ -171,10 +241,10 @@ if ($i < '4') {
     for ($k=$i; $k < 5; $k++) {
 ?>
 <tr>
-    <td colspan="4" height="30"></td>
+    <td colspan="5" height="30"></td>
 </tr>
 <tr>
-    <td colspan="4" height="1" bgcolor="#e4e4e4"></td>
+    <td colspan="5" height="1" bgcolor="#e4e4e4"></td>
 </tr>
 <?
     }

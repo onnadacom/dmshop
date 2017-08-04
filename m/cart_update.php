@@ -290,6 +290,11 @@ if ($m == '') {
     $sql_common .= ", item_id = '".trim(strip_tags(mysql_real_escape_string($item_id)))."' ";
     $sql_common .= ", order_option = '".trim(strip_tags(mysql_real_escape_string($order_option)))."' ";
     $sql_common .= ", order_limit = '".trim(strip_tags(mysql_real_escape_string($order_limit)))."' ";
+
+    if ($order_delivery_pay) {
+        $sql_common .= ", order_delivery_pay = '".trim(strip_tags(mysql_real_escape_string($order_delivery_pay)))."' ";
+    }
+
     $sql_common .= ", datetime = '".$shop['time_ymdhis']."' ";
 
     // insert
@@ -446,6 +451,11 @@ else if ($m == 'item_option_array') {
         $sql_common .= ", item_id = '".trim(strip_tags(mysql_real_escape_string($item_id)))."' ";
         $sql_common .= ", order_option = '".trim(strip_tags(mysql_real_escape_string($list[$i]['option_id'])))."' ";
         $sql_common .= ", order_limit = '".trim(strip_tags(mysql_real_escape_string($list[$i]['order_limit'])))."' ";
+
+        if ($order_delivery_pay) {
+            $sql_common .= ", order_delivery_pay = '".trim(strip_tags(mysql_real_escape_string($dmshop_item['item_delivery_pay'])))."' ";
+        }
+
         $sql_common .= ", datetime = '".$shop['time_ymdhis']."' ";
 
         sql_query(" insert into $shop[cart_table] $sql_common ");

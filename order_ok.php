@@ -61,6 +61,9 @@ if ($shop_user_login) {
 
 }
 
+// 배송비 선결제
+$order_delivery_pay = false;
+
 // 주문내역
 $list = array();
 $result = sql_query(" select * from $shop[order_table] $sql_search order by id asc ");
@@ -92,6 +95,18 @@ for ($i=0; $row=sql_fetch_array($result); $i++) {
     }
 
     $list[$i]['option_money'] = $option_money; // 옵션금액
+
+    // 묶음배송
+    if ($row['order_delivery_type']) {
+
+        // 선결제
+        if (!$row['order_delivery_pay']) {
+
+            $order_delivery_pay = true;
+
+        }
+
+    }
 
 }
 

@@ -92,6 +92,9 @@ $order_total_money = 0;
 // 묶음배송
 $delivery_money_free = false;
 
+// 착불
+$order_delivery_pay = false;
+
 // 쿠폰
 $order_coupon_bank = false;
 $order_coupon_cash = false;
@@ -273,6 +276,8 @@ for ($i=0; $i<count($chk_id); $i++) {
     $list[$i]['item_delivery'] = $dmshop_item['item_delivery']; // 배송비
     $list[$i]['item_delivery_bunch'] = $dmshop_item['item_delivery_bunch']; // 묶음배송
 
+    $item_delivery = 0;
+
     // 배송비
     if ($list[$i]['item_delivery']) {
 
@@ -281,35 +286,65 @@ for ($i=0; $i<count($chk_id); $i++) {
 
             $delivery_money_free = true;
 
-            $list[$i]['item_delivery'] = 0;
             $list[$i]['delivery_type'] = 1;
+
+            $list[$i]['item_delivery'] = 0;
+
+            // 선결제
+            if (!$list[$i]['order_delivery_pay']) {
+
+                $order_delivery_pay = true;
+
+            }
 
         } else {
         // 묶음배송이 아니다면 추가배송비
 
-            $order_delivery_money += $list[$i]['item_delivery'];
-            $list[$i]['item_delivery'] = $list[$i]['item_delivery'];
             $list[$i]['delivery_type'] = 2;
+
+            // 착불
+            if ($list[$i]['order_delivery_pay']) {
+
+                $item_delivery = 0;
+
+            } else {
+            // 착불이 아닐 때
+
+                $order_delivery_money += $list[$i]['item_delivery'];
+                $list[$i]['item_delivery'] = $list[$i]['item_delivery'];
+
+                $item_delivery = $list[$i]['item_delivery'];
+
+            }
 
         }
 
     } else {
+    // 배송비 없음 (묶음배송)
 
-            $delivery_money_free = true;
+        $delivery_money_free = true;
+
+        $list[$i]['delivery_type'] = 0;
 
         $list[$i]['item_delivery'] = 0;
-        $list[$i]['delivery_type'] = 0;
+
+        // 선결제
+        if (!$list[$i]['order_delivery_pay']) {
+
+            $order_delivery_pay = true;
+
+        }
 
     }
 
-    $list[$i]['order_total_money'] = ($order_item_money + $list[$i]['item_delivery']) - $row['order_coupon']; // 옵션포함상품가, 배송비, 쿠폰적용 (해당 상품의 결제가격이다)
+    $list[$i]['order_total_money'] = ($order_item_money + $item_delivery) - $row['order_coupon']; // 옵션포함상품가, 배송비, 쿠폰적용 (해당 상품의 결제가격이다)
 
 }
 
 if ($i) {
 
     // 판매가 합계가 무료배송비 미만
-    if ($delivery_money_free && $order_total_item_money < $dmshop['delivery_money_free']) {
+    if ($order_delivery_pay && $delivery_money_free && $order_total_item_money < $dmshop['delivery_money_free']) {
 
         // 기본 배송비
         $order_delivery_money += $dmshop['delivery_money'];

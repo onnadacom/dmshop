@@ -154,6 +154,8 @@ echo "<td><a href='".$shop['https_url']."/cart.php' class='off'>장바구니</a>
     <col width="78">
 </colgroup>
 <?
+$item_delivery_bunch = false;
+
 for ($i=0; $i<count($list); $i++) {
 
     $thumb = shop_item_thumb($list[$i]['item_id'], "default", "", "82", "82", "2");
@@ -246,29 +248,62 @@ for ($i=0; $i<count($list); $i++) {
     <td class="line_h"></td>
     <td class="money" align="center">
 <?
-if ($list[$i]['delivery_type'] == 1) {
+if ($list[$i]['delivery_type'] == 2) {
 
-    echo "<span class='delivery1'>";
-    echo "묶음배송상품<br />";
-    echo "총 주문금액이 ".number_format($dmshop['delivery_money_free'])."원 이하일 경우 묶음배송비 ".number_format($dmshop['delivery_money'])."원 추가";
+    echo "<span class='delivery2'>";
+
+    if ($list[$i]['order_delivery_pay']) {
+
+        echo "착불<br />";
+
+    } else {
+
+        echo "선결제<br />";
+
+    }
+
+    echo number_format($list[$i]['item_delivery'])." 원<br />";
+
+    echo "묶음배송불가";
+
     echo "</span>";
-
-}
-
-else if ($list[$i]['delivery_type'] == 2) {
-
-    echo "<span class='delivery2'>".number_format($list[$i]['item_delivery'])." 원<br />묶음배송불가</span>";
 
 } else {
 
-    echo "<span class='delivery1'>";
-    echo "묶음배송상품<br />";
-    echo "총 주문금액이 ".number_format($dmshop['delivery_money_free'])."원 이하일 경우 묶음배송비 ".number_format($dmshop['delivery_money'])."원 추가";
+    echo "<span class='delivery2'>";
+
+    if ($order_total_item_money >= $dmshop['delivery_money_free']) {
+
+        echo "묶음배송무료<br />";
+
+    } else {
+
+        if (!$item_delivery_bunch) {
+
+            if ($order_delivery_pay) {
+
+                echo "선결제<br />";
+
+            } else {
+
+                echo "착불<br />";
+
+            }
+
+            echo number_format($dmshop['delivery_money'])." 원<br />";
+
+        }
+
+        echo "묶음배송";
+
+        $item_delivery_bunch = true;
+
+    }
+
     echo "</span>";
 
 }
-?>
-    </td>
+?></td>
     <td class="line_h"></td>
     <td>
 <table border="0" cellspacing="0" cellpadding="0" class="auto">
@@ -502,5 +537,5 @@ else if ($list[$i]['delivery_type'] == 2) {
 </table>
 
 <table border="0" cellspacing="0" cellpadding="0">
-<tr><td height="50"></td></tr> 
+<tr><td height="50"></td></tr>
 </table>

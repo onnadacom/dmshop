@@ -401,6 +401,24 @@ for ($i=0; $i<count($list); $i++) {
 </table>
 <? } ?>
 
+<table border="0" cellspacing="0" cellpadding="0">
+<tr height="30">
+    <td width="60" class="text">배송비결제</td>
+    <td>
+<select id="order_delivery_pay" name="order_delivery_pay" class="select">
+<option value="0">주문시 결제</option>
+<? if ($dmshop_item['item_delivery_pay']) { ?>
+<option value="1">착불</option>
+<? } ?>
+</select>
+    </td>
+</tr>
+</table>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<tr><td height="1" bgcolor="#eeeeee" class="none">&nbsp;</td></tr>
+</table>
+
 <div id="item_cart_data" style="display:none;"></div>
 
 <form method="post" id="formItem" name="formItem" autocomplete="off">
@@ -410,6 +428,7 @@ for ($i=0; $i<count($list); $i++) {
 <input type="hidden" name="item_id" value="<?=$dmshop_item['id']?>" />
 <input type="hidden" id="cart_id" name="cart_id" value="" />
 <input type="hidden" id="order_start" name="order_start" value="" />
+<input type="hidden" name="order_delivery_pay" value="" />
 <input type="submit" value="ok" disabled style="display:none;" />
 <? if ($dmshop_item['item_option_use']) { ?>
 <script type="text/javascript">
@@ -779,6 +798,7 @@ function itemOrder()
 
         f.m.value = "item_option_array";
         f.cart_type.value = "order";
+        f.order_delivery_pay.value = $('#order_delivery_pay').val();
 
         var string = $('#formItem').serialize();
 
@@ -821,7 +841,7 @@ function itemOrder()
 
         $('#order_start').val('');
 
-        $.post("cart_update.php", {"item_id" : item_id, "order_option" : order_option, "order_limit" : order_limit, "cart_type" : "order"}, function(data) {
+        $.post("cart_update.php", {"item_id" : item_id, "order_option" : order_option, "order_limit" : order_limit, "cart_type" : "order", "order_delivery_pay" : $('#order_delivery_pay').val()}, function(data) {
 
             $("#item_cart_data").html(data);
 
@@ -900,6 +920,7 @@ function itemCart()
 
         f.m.value = "item_option_array";
         f.cart_type.value = "cart";
+        f.order_delivery_pay.value = $('#order_delivery_pay').val();
 
         var string = $('#formItem').serialize();
 
@@ -915,7 +936,7 @@ function itemCart()
         var order_option = "";
         f.m.value = "";
 
-        $.post("cart_update.php", {"item_id" : f.item_id.value, "order_option" : order_option, "order_limit" : f.order_limit.value, "cart_type" : "cart"}, function(data) {
+        $.post("cart_update.php", {"item_id" : f.item_id.value, "order_option" : order_option, "order_limit" : f.order_limit.value, "cart_type" : "cart", "order_delivery_pay" : $('#order_delivery_pay').val()}, function(data) {
 
             $("#item_cart_data").html(data);
 

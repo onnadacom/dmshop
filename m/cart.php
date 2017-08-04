@@ -54,6 +54,9 @@ $order_total_money = 0;
 // 묶음배송
 $delivery_money_free = false;
 
+// 배송비 선결제
+$order_delivery_pay = false;
+
 // 장바구니
 $list = array();
 $result = sql_query(" select * from $shop[cart_table] $sql_search order by datetime desc ");
@@ -131,6 +134,8 @@ for ($i=0; $row=sql_fetch_array($result); $i++) {
     $list[$i]['item_delivery'] = $dmshop_item['item_delivery']; // 배송비
     $list[$i]['item_delivery_bunch'] = $dmshop_item['item_delivery_bunch']; // 묶음배송
 
+    $item_delivery = 0;
+
     // 배송비
     if ($list[$i]['item_delivery']) {
 
@@ -139,35 +144,65 @@ for ($i=0; $row=sql_fetch_array($result); $i++) {
 
             $delivery_money_free = true;
 
-            $list[$i]['item_delivery'] = 0;
             $list[$i]['delivery_type'] = 1;
+
+            $list[$i]['item_delivery'] = 0;
+
+            // 선결제
+            if (!$list[$i]['order_delivery_pay']) {
+
+                $order_delivery_pay = true;
+
+            }
 
         } else {
         // 묶음배송이 아니다면 추가배송비
 
-            $order_delivery_money += $list[$i]['item_delivery'];
-            $list[$i]['item_delivery'] = $list[$i]['item_delivery'];
             $list[$i]['delivery_type'] = 2;
+
+            // 착불
+            if ($list[$i]['order_delivery_pay']) {
+
+                $item_delivery = 0;
+
+            } else {
+            // 착불이 아닐 때
+
+                $order_delivery_money += $list[$i]['item_delivery'];
+                $list[$i]['item_delivery'] = $list[$i]['item_delivery'];
+
+                $item_delivery = $list[$i]['item_delivery'];
+
+            }
 
         }
 
     } else {
+    // 배송비 없음 (묶음배송)
 
         $delivery_money_free = true;
 
-        $list[$i]['item_delivery'] = 0;
         $list[$i]['delivery_type'] = 0;
+
+        $list[$i]['item_delivery'] = 0;
+
+        // 선결제
+        if (!$list[$i]['order_delivery_pay']) {
+
+            $order_delivery_pay = true;
+
+        }
 
     }
 
-    $list[$i]['order_total_money'] = ($order_item_money + $list[$i]['item_delivery']) - $row['order_coupon']; // 옵션포함상품가, 배송비, 쿠폰적용 (해당 상품의 결제가격이다)
+    $list[$i]['order_total_money'] = ($order_item_money + $item_delivery) - $row['order_coupon']; // 옵션포함상품가, 배송비, 쿠폰적용 (해당 상품의 결제가격이다)
 
 }
 
 if ($i) {
 
     // 판매가 합계가 무료배송비 미만
-    if ($delivery_money_free && $order_total_item_money < $dmshop['delivery_money_free']) {
+    if ($order_delivery_pay && $delivery_money_free && $order_total_item_money < $dmshop['delivery_money_free']) {
 
         // 기본 배송비
         $order_delivery_money += $dmshop['delivery_money'];
@@ -214,6 +249,8 @@ $colspan = 15;
 <input type="hidden" name="m" value="" />
 <input type="submit" value="ok" disabled style="display:none;" />
 <?
+$item_delivery_bunch = false;
+
 for ($i=0; $i<count($list); $i++) {
 
     $thumb = shop_item_thumb($list[$i]['item_id'], "default", "", "82", "82", "2");
@@ -228,16 +265,7 @@ for ($i=0; $i<count($list); $i++) {
     <td>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
-    <td>
-<a href="item.php?id=<?=$list[$i]['item_code']?>" class="title"><?=$list[$i]['item_title']?></a>
-<?
-if ($list[$i]['delivery_type'] == 2) {
-
-    echo " (묶음배송불가)";
-
-}
-?>
-    </td>
+    <td><a href="item.php?id=<?=$list[$i]['item_code']?>" class="title"><?=$list[$i]['item_title']?></a></td>
 </tr>
 </table>
 
@@ -262,6 +290,63 @@ if ($list[$i]['delivery_type'] == 2) {
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
     <td>주문금액 : <?=number_format($list[$i]['order_item_money'])?> 원</td>
+</tr>
+</table>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<tr>
+    <td>
+<?
+echo "배송비 : ";
+
+if ($list[$i]['delivery_type'] == 2) {
+
+    if ($list[$i]['order_delivery_pay']) {
+
+        echo "착불";
+
+    } else {
+
+        echo "선결제";
+
+    }
+
+    echo " ".number_format($list[$i]['item_delivery'])." 원";
+
+    echo "(묶음배송불가)";
+
+} else {
+
+    if ($order_total_item_money >= $dmshop['delivery_money_free']) {
+
+        echo "묶음배송무료";
+
+    } else {
+
+        if (!$item_delivery_bunch) {
+
+            if ($order_delivery_pay) {
+
+                echo "선결제";
+
+            } else {
+
+                echo "착불";
+
+            }
+
+            echo " ".number_format($dmshop['delivery_money'])." 원";
+
+        }
+
+        echo "(묶음배송)";
+
+        $item_delivery_bunch = true;
+
+    }
+
+}
+?></td>
 </tr>
 </table>
 

@@ -204,6 +204,8 @@ DD_belatedPNG.fix('.png');
     <col width="90">
     <col width="1">
     <col width="90">
+    <col width="1">
+    <col width="90">
 </colgroup>
 <tr height="30" bgcolor="#f7f7f7">
     <td align="center" class="title">상품명</td>
@@ -211,16 +213,20 @@ DD_belatedPNG.fix('.png');
     <td align="center" class="title">주문수량</td>
     <td></td>
     <td align="center" class="title">판매가격</td>
+    <td></td>
+    <td align="center" class="title">배송비</td>
 </tr>
-<tr><td colspan="5" height="2" bgcolor="#777777"></td></tr>
+<tr><td colspan="7" height="2" bgcolor="#777777"></td></tr>
 <?
+$item_delivery_bunch = false;
+
 for ($i=0; $i<count($list); $i++) {
 
     $thumb = shop_item_thumb($list[$i]['item_id'], "default", "", "50", "50", "2");
     if (!file_exists($thumb)) { $thumb = $dmshop_mypage_path."/img/noimage.gif"; }
 ?>
 <? if ($i > '0') { ?>
-<tr><td colspan="5" class="dot"></td></tr>
+<tr><td colspan="7" class="dot"></td></tr>
 <? } ?>
 <tr height="73">
     <td>
@@ -255,6 +261,65 @@ for ($i=0; $i<count($list); $i++) {
     <td align="center" class="limit"><?=number_format($list[$i]['order_limit']);?> 개</td>
     <td bgcolor="#efefef"></td>
     <td align="center" class="money"><?=number_format($list[$i]['order_item_money']);?> 원</td>
+    <td bgcolor="#efefef"></td>
+    <td align="center" class="limit">
+<?
+if ($list[$i]['order_delivery_type'] == 2) {
+
+    echo "<span class='delivery2'>";
+
+    if ($list[$i]['order_delivery_pay']) {
+
+        echo "착불<br />";
+
+    } else {
+
+        echo "선결제<br />";
+
+    }
+
+    echo number_format($list[$i]['order_real_delivery'])." 원<br />";
+
+    echo "묶음배송불가";
+
+    echo "</span>";
+
+} else {
+
+    echo "<span class='delivery2'>";
+
+    if ($dmshop_order['order_total_item_money'] >= $dmshop_order['delivery_money_free']) {
+
+        echo "묶음배송무료<br />";
+
+    } else {
+
+        if (!$item_delivery_bunch) {
+
+            if ($order_delivery_pay) {
+
+                echo "선결제<br />";
+
+            } else {
+
+                echo "착불<br />";
+
+            }
+
+            echo number_format($dmshop_order['delivery_money'])." 원<br />";
+
+        }
+
+        echo "묶음배송";
+
+        $item_delivery_bunch = true;
+
+    }
+
+    echo "</span>";
+
+}
+?></td>
 </tr>
 <? } ?>
 </table>

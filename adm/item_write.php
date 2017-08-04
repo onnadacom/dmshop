@@ -69,6 +69,7 @@ if ($m == '') {
 
     $dmshop_item['item_delivery'] = $dmshop['delivery_money']; // 배송비
     $dmshop_item['item_delivery_bunch'] = 1; // 묶음배송여부
+    $dmshop_item['item_delivery_pay'] = 0; // 착불배송비
 
 }
 
@@ -857,6 +858,29 @@ if ($cnt) {
     <td class="tx2">원</td>
     <td width="10"></td>
     <td class="help1">(기본 배송비 <?=number_format($dmshop['delivery_money'])?>원)</td>
+</tr>
+</table>
+    </td>
+    <td></td>
+</tr>
+<tr><td colspan="<?=$colspan?>" height="1" class="bc1"></td></tr>
+<tr height="60">
+    <td></td>
+    <td class="subject"><span class="tip23">착불배송비</span></td>
+    <td class="bc1"></td>
+    <td></td>
+    <td>
+<table border="0" cellspacing="0" cellpadding="0">
+<tr>
+    <td><input type="radio" name="item_delivery_pay" value="0" class="radio" <? if ($dmshop_item['item_delivery_pay'] == '0') { echo "checked"; } ?> /></td>
+    <td width="5"></td>
+    <td class="tx2" onclick="shopElementFocus('formItem', 'item_delivery_pay', '0');">사용안함</td>
+    <td width="30"></td>
+    <td><input type="radio" name="item_delivery_pay" value="1" class="radio" <? if ($dmshop_item['item_delivery_pay'] == '1') { echo "checked"; } ?> /></td>
+    <td width="5"></td>
+    <td class="tx2" onclick="shopElementFocus('formItem', 'item_delivery_pay', '1');">사용</td>
+    <td width="10"></td>
+    <td class="help1"></td>
 </tr>
 </table>
     </td>

@@ -15,9 +15,9 @@ if ($dmshop_user['datetime'] != $_POST['form_check']) {
 }
 
 // 현재 버전 설정
-$shop['version'] = "DM SHOP Ver. 0.99.56";
-$shop['version_code'] = 56;
-$shop['version_date'] = "2017-02-15";
+$shop['version'] = "DM SHOP Ver. 0.99.57";
+$shop['version_code'] = 57;
+$shop['version_date'] = "2017-08-04";
 
 // 버전 체크
 if ($dmshop['version_code'] == $shop['version_code']) {
@@ -98,6 +98,16 @@ if ($dmshop['version_code'] < 55) {
 
     sql_query(" ALTER TABLE $shop[user_table] ADD `social` TINYINT( 4 ) NOT NULL DEFAULT '0' ", false);
     sql_query(" ALTER TABLE $shop[user_table] ADD `social_key` VARCHAR( 100 ) NOT NULL ", false);
+
+}
+
+if ($dmshop['version_code'] < 57) {
+
+    sql_query(" ALTER TABLE `{$shop[item_table]}`  ADD `item_delivery_pay` INT(11) NOT NULL DEFAULT '0' COMMENT '착불배송비' AFTER `item_delivery` ", false);
+    sql_query(" ALTER TABLE `{$shop[cart_table]}`  ADD `order_delivery_pay` INT(11) NOT NULL DEFAULT '0' COMMENT '착불배송비' AFTER `order_coupon_id` ", false);
+    sql_query(" ALTER TABLE `{$shop[order_table]}`  ADD `order_delivery_pay` INT(11) NOT NULL DEFAULT '0' COMMENT '착불배송비' AFTER `order_delivery_money` ", false);
+    sql_query(" ALTER TABLE `{$shop[order_table]}`  ADD `delivery_money_free` INT(11) NOT NULL DEFAULT '0' COMMENT '무료배송금액' AFTER `category4` ", false);
+    sql_query(" ALTER TABLE `{$shop[order_table]}`  ADD `delivery_money` INT(11) NOT NULL DEFAULT '0' COMMENT '기본배송료' AFTER `delivery_money_free` ", false);
 
 }
 

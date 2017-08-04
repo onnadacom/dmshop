@@ -70,6 +70,7 @@ if ($m == '') {
     $sql_common .= ", item_money = '".str_replace(",", "", addslashes($_POST['item_money']))."' ";
     $sql_common .= ", item_cash = '".str_replace(",", "", addslashes($_POST['item_cash']))."' ";
     $sql_common .= ", item_delivery = '".str_replace(",", "", addslashes($_POST['item_delivery']))."' ";
+    $sql_common .= ", item_delivery_pay = '".str_replace(",", "", addslashes($_POST['item_delivery_pay']))."' ";
     $sql_common .= ", item_delivery_bunch = '".addslashes($_POST['item_delivery_bunch'])."' ";
     $sql_common .= ", item_option_use = '".addslashes($_POST['item_option_use'])."' ";
     $sql_common .= ", item_limit = '".str_replace(",", "", addslashes($_POST['item_limit']))."' ";
@@ -156,6 +157,7 @@ else if ($m == 'u') {
     $sql_common .= ", item_money = '".str_replace(",", "", addslashes($_POST['item_money']))."' ";
     $sql_common .= ", item_cash = '".str_replace(",", "", addslashes($_POST['item_cash']))."' ";
     $sql_common .= ", item_delivery = '".str_replace(",", "", addslashes($_POST['item_delivery']))."' ";
+    $sql_common .= ", item_delivery_pay = '".str_replace(",", "", addslashes($_POST['item_delivery_pay']))."' ";
     $sql_common .= ", item_delivery_bunch = '".addslashes($_POST['item_delivery_bunch'])."' ";
     $sql_common .= ", item_option_use = '".addslashes($_POST['item_option_use'])."' ";
     $sql_common .= ", item_limit = '".str_replace(",", "", addslashes($_POST['item_limit']))."' ";
